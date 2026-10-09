@@ -1,0 +1,6 @@
+{
+  "name": "Horse Racing Adventure 2D",
+  "description": "A 2D horse riding and racing adventure game featuring 50 levels, touch controls, rider outfit and food shops, AI opponents, and rich physics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

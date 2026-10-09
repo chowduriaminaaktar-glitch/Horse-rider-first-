@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Horse Racing Adventure 2D</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 2D Canvas Game Area -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Notification Toast -->
+        <div id="toast-notification"></div>
+
+        <!-- Rotate Phone Prompt Overlay -->
+        <div id="rotate-prompt-overlay">
+            <div class="rotate-icon-anim">📱🔄</div>
+            <div class="rotate-title">Rotate Your Phone</div>
+            <div class="rotate-subtitle">Turn your phone horizontally (Landscape mode) for the best 2D horse racing view!</div>
+            <button class="btn-play-anyway" id="btn-dismiss-rotate">Continue Anyway</button>
+        </div>
+
+        <!-- In-Game HUD (Exact match to Photo 1) -->
+        <div id="hud-overlay" style="display: none;">
+            <div class="hud-top-bar">
+                <!-- 1. SPEED (Turtle & Rabbit) -->
+                <div class="hud-box hud-box-speed">
+                    <div class="speed-icons-row">
+                        <span class="speed-animal">🐢</span>
+                        <div class="speed-meter-track">
+                            <div class="speed-meter-fill" id="speed-fill"></div>
+                        </div>
+                        <span class="speed-animal">🐇</span>
+                    </div>
+                    <div class="hud-box-label" data-i18n="speed">SPEED</div>
+                </div>
+
+                <!-- 2. LEVEL -->
+                <div class="hud-box">
+                    <div class="hud-box-val" id="hud-level-val">1</div>
+                    <div class="hud-box-label" data-i18n="level">LEVEL</div>
+                </div>
+
+                <!-- 3. TIME -->
+                <div class="hud-box">
+                    <div class="hud-box-val" id="hud-time-val">00:00</div>
+                    <div class="hud-box-label" data-i18n="time">TIME</div>
+                </div>
+
+                <!-- 4. SCORE / COINS -->
+                <div class="hud-box">
+                    <div class="hud-box-val" id="hud-coins-val" style="color: #ffd54f;">0</div>
+                    <div class="hud-box-label" data-i18n="score">SCORE</div>
+                </div>
+
+                <!-- 5. HORSE HEALTH -->
+                <div class="hud-box hud-box-health">
+                    <div class="health-strip-track">
+                        <div class="health-strip-fill" id="health-fill"></div>
+                    </div>
+                    <div class="hud-box-label"><span id="hud-health-val">100/100</span> ❤️</div>
+                </div>
+
+                <!-- 6. TRACK PROGRESS WITH HORSE ICONS (Photo 1 Right Box) -->
+                <div class="hud-track-panel">
+                    <div class="hud-track-wire">
+                        <span class="hud-horse-silhouette" id="minimap-ai-0" style="left: 0%;">🐎</span>
+                        <span class="hud-horse-silhouette" id="minimap-ai-1" style="left: 0%;">🐎</span>
+                        <span class="hud-horse-silhouette player" id="minimap-player" style="left: 0%; color: #ffd54f;">🏇</span>
+                        <span class="hud-horse-silhouette" id="minimap-ai-2" style="left: 0%;">🐎</span>
+                        <span class="hud-finish-gate">🏁</span>
+                    </div>
+                </div>
+
+                <!-- 7. PAUSE -->
+                <button class="hud-pause-btn" id="btn-pause" title="Pause Game">
+                    <span>⏸️</span>
+                    <span data-i18n="pause">PAUSE</span>
+                </button>
+            </div>
+
+            <!-- In-Game Touch Controls -->
+            <div class="controls-bottom-bar">
+                <div class="left-controls">
+                    <button class="touch-btn btn-quick-feed" id="btn-quick-feed" title="Feed Horse">
+                        <span class="icon">🥕</span>
+                        <span style="font-size: 10px;" data-i18n="feed">FEED</span>
+                    </button>
+                </div>
+                <div class="right-controls">
+                    <button class="touch-btn btn-jump" id="btn-jump" title="Jump Hurdle">
+                        <span class="icon">⬆️</span>
+                        <span data-i18n="jump">JUMP</span>
+                    </button>
+                    <button class="touch-btn btn-run" id="btn-run" title="Hold to Gallop">
+                        <span class="icon">🏇</span>
+                        <span data-i18n="run">RUN</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MAIN MENU ================= -->
+        <div class="screen-overlay active" id="main-menu-overlay">
+            <div class="main-menu-card">
+                <div style="font-size: 38px; margin-bottom: 2px;">🏇🏆</div>
+                <h1 class="game-title" data-i18n="gameTitle">HORSE RACING ADVENTURE 2D</h1>
+                <div style="font-size: 13px; color: #94a3b8; font-weight: 600; margin-top: 2px;" data-i18n="gameSubtitle">
+                    RIDE, JUMP & COMPETE FOR THE CUP
+                </div>
+
+                <div class="menu-status-bar">
+                    <div class="status-pill">
+                        <span>🪙</span>
+                        <span id="menu-coins-val">0</span>
+                    </div>
+                    <div class="status-pill">
+                        <span>❤️</span>
+                        <span id="menu-health-val">100/100</span>
+                    </div>
+                </div>
+
+                <div class="menu-btn-group">
+                    <button class="btn-primary" id="menu-btn-play">
+                        <span>▶</span>
+                        <span data-i18n="playGame">PLAY GAME</span>
+                    </button>
+                    <button class="btn-secondary" id="menu-btn-continue">
+                        <span>⏩</span>
+                        <span data-i18n="continueGame">CONTINUE GAME</span>
+                    </button>
+                    <button class="btn-outline" id="menu-btn-levels">
+                        <span>🗺️</span>
+                        <span data-i18n="selectLevel">SELECT LEVEL (50 LEVELS)</span>
+                    </button>
+                    <button class="btn-outline" id="menu-btn-shop">
+                        <span>🛒</span>
+                        <span data-i18n="shop">HORSE & RIDER SHOP</span>
+                    </button>
+                    <button class="btn-outline" id="menu-btn-settings">
+                        <span>⚙️</span>
+                        <span data-i18n="settings">SETTINGS</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 50 LEVEL SELECTION MODAL ================= -->
+        <div class="screen-overlay" id="levels-modal">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <span>🗺️</span>
+                        <span data-i18n="selectLevel">SELECT LEVEL</span>
+                    </div>
+                    <button class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="level-tabs" id="level-range-tabs"></div>
+                    <div class="level-grid" id="levels-grid-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SHOP MODAL (PHOTO 2 DESIGN) ================= -->
+        <div class="screen-overlay" id="shop-modal">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <span>🛒</span>
+                        <span data-i18n="shop">HORSE SHOP & STABLE</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="background: rgba(255, 179, 0, 0.25); border: 1px solid #ffb300; padding: 3px 10px; border-radius: 12px; color: #ffd54f; font-weight: 800;">
+                            <span>🪙 </span><span id="shop-coins-val">0</span>
+                        </div>
+                        <button class="modal-close-btn">&times;</button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <!-- Photo 2 Stable Upgrades Panel -->
+                    <div class="stable-upgrades-card">
+                        <div style="font-weight: 900; font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                            <span>⭐</span> HORSE STABLE TRAINING & UPGRADES
+                        </div>
+
+                        <!-- 1. Stamina / Health Recovery -->
+                        <div class="upgrade-row">
+                            <div class="upgrade-icon-box">🥕</div>
+                            <div class="upgrade-gauge-col">
+                                <div class="upgrade-gauge-track">
+                                    <div class="upgrade-gauge-fill fill-red" id="gauge-health-fill" style="width: 25%;"></div>
+                                </div>
+                                <div class="upgrade-badge">Health Stamina - <span id="lvl-health-badge">Lvl 1</span></div>
+                            </div>
+                            <button class="upgrade-btn-oval" id="btn-up-health">250 🪙</button>
+                        </div>
+
+                        <!-- 2. Horse Speed -->
+                        <div class="upgrade-row">
+                            <div class="upgrade-icon-box">🐎</div>
+                            <div class="upgrade-gauge-col">
+                                <div class="upgrade-gauge-track">
+                                    <div class="upgrade-gauge-fill fill-blue" id="gauge-speed-fill" style="width: 25%;"></div>
+                                </div>
+                                <div class="upgrade-badge">Gallop Speed - <span id="lvl-speed-badge">Lvl 1</span></div>
+                            </div>
+                            <button class="upgrade-btn-oval" id="btn-up-speed">500 🪙</button>
+                        </div>
+
+                        <!-- 3. Jump Agility / Bonus -->
+                        <div class="upgrade-row">
+                            <div class="upgrade-icon-box">🏆</div>
+                            <div class="upgrade-gauge-col">
+                                <div class="upgrade-gauge-track">
+                                    <div class="upgrade-gauge-fill fill-green" id="gauge-agility-fill" style="width: 25%;"></div>
+                                </div>
+                                <div class="upgrade-badge">Jump Agility - <span id="lvl-agility-badge">Lvl 1</span></div>
+                            </div>
+                            <button class="upgrade-btn-oval" id="btn-up-agility">250 🪙</button>
+                        </div>
+                    </div>
+
+                    <!-- Shop Tabs: Outfits & Food -->
+                    <div class="shop-tabs">
+                        <button class="shop-tab-btn active" id="shop-tab-outfits">
+                            <span>🏇</span>
+                            <span data-i18n="outfitsTab">RIDER OUTFITS</span>
+                        </button>
+                        <button class="shop-tab-btn" id="shop-tab-food">
+                            <span>🥕</span>
+                            <span data-i18n="foodTab">HORSE FOOD</span>
+                        </button>
+                    </div>
+                    <div class="shop-grid" id="shop-grid-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SETTINGS MODAL ================= -->
+        <div class="screen-overlay" id="settings-modal">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <span>⚙️</span>
+                        <span data-i18n="settings">SETTINGS</span>
+                    </div>
+                    <button class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-list">
+                        <div class="setting-row">
+                            <span class="setting-label" data-i18n="soundEnabled">Sound Effects</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="setting-sound-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label" data-i18n="bgmEnabled">Background Music</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="setting-bgm-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label">Button SFX</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="setting-sfx-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label" data-i18n="masterVolume">Master Volume</span>
+                            <input type="range" class="slider-ctrl" id="setting-master-vol" min="0" max="100" value="100">
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label" data-i18n="musicVolume">Music Volume</span>
+                            <input type="range" class="slider-ctrl" id="setting-music-vol" min="0" max="100" value="70">
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label" data-i18n="sfxVolume">SFX Volume</span>
+                            <input type="range" class="slider-ctrl" id="setting-sfx-vol" min="0" max="100" value="80">
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label" data-i18n="vibration">Vibration</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="setting-vibration" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label" data-i18n="language">Language</span>
+                            <select class="select-input" id="setting-language">
+                                <option value="en" selected>English</option>
+                                <option value="bn">বাংলা (Bangla)</option>
+                            </select>
+                        </div>
+                        <button class="btn-danger" id="setting-reset-btn" data-i18n="resetProgress">
+                            RESET ALL PROGRESS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAUSE MODAL ================= -->
+        <div class="screen-overlay" id="pause-modal">
+            <div class="main-menu-card" style="max-width: 400px;">
+                <h2 style="font-size: 22px; font-weight: 900; margin-bottom: 16px; color: #ffd54f;" data-i18n="paused">
+                    RACE PAUSED
+                </h2>
+                <div class="menu-btn-group">
+                    <button class="btn-primary" id="pause-btn-resume">
+                        <span>▶</span>
+                        <span data-i18n="resume">RESUME RACE</span>
+                    </button>
+                    <button class="btn-secondary" id="pause-btn-restart">
+                        <span>🔄</span>
+                        <span data-i18n="restart">RESTART RACE</span>
+                    </button>
+                    <button class="btn-outline" id="pause-btn-settings">
+                        <span>⚙️</span>
+                        <span data-i18n="settings">SETTINGS</span>
+                    </button>
+                    <button class="btn-outline" id="pause-btn-exit">
+                        <span>🚪</span>
+                        <span data-i18n="exitMenu">EXIT TO MENU</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VICTORY MODAL ================= -->
+        <div class="screen-overlay" id="victory-modal">
+            <div class="main-menu-card" style="max-width: 440px; border-color: #ffd54f;">
+                <div style="font-size: 44px; margin-bottom: 4px;">🏆🎉</div>
+                <h2 style="font-size: 24px; font-weight: 900; color: #ffd54f;" id="victory-title">VICTORY!</h2>
+                <div style="font-size: 16px; font-weight: 800; color: #a7f3d0; margin-top: 4px;" id="victory-rank">1st Place</div>
+
+                <div class="menu-status-bar" style="margin: 14px 0;">
+                    <div class="status-pill">
+                        <span>⏱️</span>
+                        <span id="victory-time">00:00</span>
+                    </div>
+                    <div class="status-pill">
+                        <span>🪙</span>
+                        <span id="victory-reward">+150 Coins</span>
+                    </div>
+                </div>
+
+                <div class="menu-btn-group">
+                    <button class="btn-primary" id="victory-btn-next">
+                        <span>⏩</span>
+                        <span data-i18n="nextLevel">NEXT LEVEL</span>
+                    </button>
+                    <button class="btn-secondary" id="victory-btn-replay">
+                        <span>🔄</span>
+                        <span data-i18n="replay">REPLAY</span>
+                    </button>
+                    <button class="btn-outline" id="victory-btn-menu">
+                        <span>🏠</span>
+                        <span data-i18n="exitMenu">MAIN MENU</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= HORSE NEEDS CARE MODAL ================= -->
+        <div class="screen-overlay" id="needs-care-modal">
+            <div class="main-menu-card" style="max-width: 480px; border-color: #ef4444;">
+                <div style="font-size: 40px; margin-bottom: 4px;">🐴💔</div>
+                <h2 style="font-size: 22px; font-weight: 900; color: #f87171;" data-i18n="horseNeedsCare">
+                    HORSE NEEDS CARE!
+                </h2>
+                <p style="font-size: 13px; color: #cbd5e1; text-align: center; margin: 8px 0 14px;" data-i18n="needsCareDesc">
+                    Your horse is exhausted. Feed your horse to restore health and race again!
+                </p>
+
+                <div style="width: 100%; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px;" id="care-food-options"></div>
+
+                <div class="menu-btn-group" style="margin-top: 10px;">
+                    <button class="btn-outline" onclick="window.gameInstance.exitToMainMenu()">
+                        <span>🏠</span>
+                        <span data-i18n="exitMenu">MAIN MENU</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="audio.js"></script>
+    <script src="levels.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
